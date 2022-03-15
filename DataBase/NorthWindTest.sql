@@ -498,3 +498,100 @@ FROM players AS p
 
 
 -- Merge(병합) 조인
+
+USE BaseballData;
+
+-- Merge(병합) 조인 = Sort Merge(정렬 병합) 조인
+-- 투 포인터와 유사
+
+SET STATISTICS TIME ON;
+SET STATISTICS IO ON;
+SET STATISTICS PROFILE ON;
+
+SELECT *
+FROM players p
+	INNER JOIN salaries AS s
+	ON p.playerID = s.playerID;
+
+-- One-To-Many (outer가 unique해야 함 => PK, Unique)
+-- Merge 조인도 조건이 붙는다.
+-- 일일이 Random Access 말고 Clustered Scan 후 정렬
+
+SELECT *
+FROM schools AS s
+	INNER JOIN schoolsplayers AS p
+	ON s.schoolID = p.schoolID;
+
+-- 오늘의 결론
+-- Merge -> Sort Merge 조인
+-- 1) 양쪽 집합을 정렬하고 병합한다.
+	-- 이미 정렬된 상태라면 Sort는 생략 가능 (특히, Clustered로 물리적 정렬된 상태라면 Best)
+	-- 정렬할 데이터가 너무 많으면 GG -> Hash 사용 고려
+-- 2) Random Access 위주로 수행되지는 않는다.
+-- 3) Many-to-Many 보다는 One-to-Many 조인에 효과적
+	-- PK, UNIQUE
+
+
+
+-- Hash(해시) 조인
+
+USE Northwind;
+
+SET STATISTICS TIME OFF;
+SET STATISTICS IO OFF;
+SET STATISTICS PROFILE OFF;
+
+SET STATISTICS TIME ON;
+SET STATISTICS IO ON;
+SET STATISTICS PROFILE ON;
+
+SELECT *
+INTO TestOrders
+FROM Orders;
+
+SELECT *
+INTO TestCustomers
+FROM Customers;
+
+SELECT *
+FROM TestOrders; -- 830
+
+SELECT *
+FROM TestCustomers; -- 91
+
+-- HASH
+SELECT *
+FROM TestOrders AS o
+	INNER JOIN TestCustomers AS c
+	ON o.CustomerID = c.CustomerID
+
+-- NL (inner 테이블에 인덱스가 없다)
+SELECT *
+FROM TestOrders AS o
+	INNER JOIN TestCustomers AS c
+	ON o.CustomerID = c.CustomerID
+	OPTION (FORCE ORDER, LOOP JOIN);
+
+-- Mrge (outer, inner 모두 sort , many-to-many)
+SELECT *
+FROM TestOrders AS o
+	INNER JOIN TestCustomers AS c
+	ON o.CustomerID = c.CustomerID
+	OPTION (FORCE ORDER, MERGE JOIN);
+
+-- HASH
+-- 데이터 수가 적은 쪽을 HashTable로
+SELECT *
+FROM TestOrders AS o
+	INNER JOIN TestCustomers AS c
+	ON o.CustomerID = c.CustomerID
+
+-- 오늘의 결론 --
+
+-- Hash 조인
+-- 1) 정렬이 필요하지 않다 -> 데이터가 너무 많아서 Merge가 부담스러울 때, Hash가 대안이 될 수 있음
+-- 2) 인덱스 유무에 영향을 받지 않는다. ***** !!!!!!!!!!!!
+	-- NL/Merge에 비해 확실한 장점
+	-- HashTable 만드는 비용을 무시하면 안됨 (수행빈도가 많으면 -> 인덱스를 만드는게 효율적)
+-- 3) 랜덤 엑세스 위주로 수행되지 않는다.
+-- 4) 데이터가 적은 쪽을 HashTable로 만드는 것이 유리하다.
