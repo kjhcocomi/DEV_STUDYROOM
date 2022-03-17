@@ -4,12 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <title>나의 웹페이지</title>
+
   <style>
   thead {color:green;}
   tbody {color:blue;}
   tfoot {color:red;}
   table, th, td {
     border: 1px solid black;
+  }
+  h1{
+    border-bottom: 3px solid red;
+    padding-bottom: 10px;
   }
   .myDiv {
   border: 5px outset red;
@@ -18,8 +23,9 @@
   }
   </style>
 </head>
+
 <body>
-  <b><i>'들쑥날쑥'</i></b> <i>토트넘</i>, <u>이제는 반등 노린다</u> <h1>[스포츠타임]</h1><strong></strong><b>하하하하하</b>
+  <b><i>'들쑥날쑥'</i></b> <i>토트넘</i>, <span style="color:blue;font-weight:bold">이제는 반등 노린다</span> <h1>[스포츠타임]</h1><strong></strong><b>하하하하하</b>
   <p>The ol element defines an ordered list:</p>
   <ol>
     <li>C++</li>
@@ -54,6 +60,15 @@
     <h2>This is a heading in a div element</h2>
     <p>This is some text in a div element.</p>
   </div>
+
+  <button type="button" onclick="testFunc()">Click Me!</button>
+
+  <script>
+  function testFunc(){
+    alert('Hello world!')
+  }
+  </script>
+
   <p>
     <a href="https://www.naver.com" target="_blank">
       <img src="map.jpg" alt="Girl in a jacket" width="310" height="10000">
